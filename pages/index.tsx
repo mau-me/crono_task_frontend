@@ -36,7 +36,7 @@ const Login = () => {
       {error && <p style={{ color: 'red', marginBottom: '10px' }}>{error}</p>}
       <Typography variant="body1" align="center" style={{ marginTop: '16px' }}>
         Ainda não tem uma conta?{' '}
-        <Link href="/auth/register">
+        <Link href="/register">
           <Button color="primary" variant="text">Registrar</Button>
         </Link>
       </Typography>
