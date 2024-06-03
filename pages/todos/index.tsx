@@ -1,7 +1,7 @@
 // pages/todos/index.tsx
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Button, List, ListItem, ListItemText, Typography, Box } from '@mui/material';
+import { Button, List, ListItem, ListItemText, Typography, Box, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { useEffect, useState } from 'react';
 import withAuth from '../../components/withAuth';
 import api from '../../utils/api';
@@ -17,6 +17,8 @@ interface Todo {
 
 const Todos = () => {
     const [todos, setTodos] = useState<Todo[]>([]);
+    const [open, setOpen] = useState(false);
+    const [todoIdToDelete, setTodoIdToDelete] = useState<number | null>(null);
     const router = useRouter();
 
     useEffect(() => {
@@ -32,12 +34,25 @@ const Todos = () => {
         }
     };
 
-    const handleDeleteTodo = async (id: number) => {
-        try {
-            await api.delete(`/todos/${id}`);
-            fetchTodos();
-        } catch (err) {
-            console.error('Erro ao deletar atividade', err);
+    const handleClickOpen = (id: number) => {
+        setTodoIdToDelete(id);
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+        setTodoIdToDelete(null);
+    };
+
+    const handleDeleteTodo = async () => {
+        if (todoIdToDelete !== null) {
+            try {
+                await api.delete(`/todos/${todoIdToDelete}`);
+                fetchTodos();
+                handleClose();
+            } catch (err) {
+                console.error('Erro ao deletar atividade', err);
+            }
         }
     };
 
@@ -78,10 +93,31 @@ const Todos = () => {
                             }
                         />
                         <Button variant="outlined" color="primary" onClick={() => handleEditTodo(todo.id)}>Editar</Button>
-                        <Button variant="outlined" color="secondary" onClick={() => handleDeleteTodo(todo.id)}>Deletar</Button>
+                        <Button variant="outlined" color="secondary" onClick={() => handleClickOpen(todo.id)}>Deletar</Button>
                     </ListItem>
                 ))}
             </List>
+            <Dialog
+                open={open}
+                onClose={handleClose}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+                <DialogTitle id="alert-dialog-title">{"Confirmação de Exclusão"}</DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        Tem certeza de que deseja excluir esta tarefa?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleClose} color="primary">
+                        Cancelar
+                    </Button>
+                    <Button onClick={handleDeleteTodo} color="secondary" autoFocus>
+                        Deletar
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };
